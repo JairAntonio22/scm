@@ -1,29 +1,30 @@
 #include "io/io.h"
 
 #include <iostream>
+#include <fstream>
 #include <stack>
 
-std::optional<std::string> io::read_stdin() {
-	std::stack<char> parens;
-	std::string result;
+using namespace std;
 
-	/* skip whitespace */ {
-		char c;
-		while ((c = std::cin.get()) != '(');
-		std::cin.unget();
+optional<string> io::readln() {
+	// TODO repl input mode
+	return nullopt;
+}
+
+optional<string> io::read_file(string_view path) {
+	ifstream input(path);
+
+	if (!input.is_open()) {
+		return nullopt;
 	}
 
-	do {
-		result.push_back(std::cin.get());
+	string result;
 
-		if (result.back() == '(') {
-			parens.push('(');
-
-		} else if (result.back() == ')') {
-			parens.pop();
-		}
-
-	} while (!parens.empty());
+	while (!input.eof()) {
+		result.push_back(input.get());
+	}
 
 	return result;
 }
+
+

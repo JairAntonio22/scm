@@ -3,16 +3,22 @@
 #include "io/io.h"
 #include "scm/scm.h"
 
-int main() {
-	while (1) {
-		std::optional<std::string> input = io::read_stdin();
-		
-		if (!input.has_value()) {
-			continue;
-		}
+using namespace io;
+using namespace scm;
+using namespace std;
 
-		std::string_view expr = scm::read(input.value());
-		std::string_view result = scm::eval(expr);
-		std::cout << result << '\n';
-	}
+int main(int argc, char **argv) {
+    if (argc != 2) {
+        return 1;
+    }
+
+    optional<string> input = read_file(argv[1]);
+
+    if (!input) {
+        return 1;
+    }
+
+    string expr = read(input.value());
+    // string result = eval(expr);
+    // cout << result;
 }
