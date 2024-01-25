@@ -6,47 +6,41 @@
 
 using namespace std;
 
-token::token(string literal, token_type type):
-    literal(literal), type(type) {}
+ostream& operator << (ostream& stream, token token) {
+    stream << token.literal << '\t';
 
-ostream& operator << (ostream& os, token t) {
-    os << t.literal << '\t';
-
-    switch (t.type) {
-        case token_type::LPAREN: return os << "LPAREN";
-        case token_type::RPAREN: return os << "RPAREN";
-        case token_type::ID:     return os << "ID";
-        default:                 return os;
+    switch (token.type) {
+        case token_type::LPAREN: return stream << "LPAREN";
+        case token_type::RPAREN: return stream << "RPAREN";
+        case token_type::ID:     return stream << "ID";
+        default:                 return stream;
     }
 }
 
-static bool isidentifier(char c) {
+static bool isidentifier(char chr) {
     static const string extended_chars = "!$%&*+-./:<=>?@^_~";
-    return isalnum(c) || extended_chars.find(c) != string::npos;
+    return bool(isalnum(chr)) || extended_chars.find(chr) != string::npos;
 }
 
-vector<token> tokenize(string input) {
+queue<token> tokenize(string input) {
     istringstream iss(input);
-    vector<token> tokens;
+    queue<token> tokens;
 
     while (!iss.eof()) {
-        if (char c = iss.peek(); isspace(c)) {
-            iss.ignore();
+        if (char chr = char(iss.peek()); chr == '(') {
+            tokens.push({string(1, char(iss.get())), token_type::LPAREN});
 
-        } else if (c == '(') {
-            tokens.emplace_back(string(1, iss.get()), token_type::LPAREN);
+        } else if (chr == ')') {
+            tokens.push({string(1, char(iss.get())), token_type::RPAREN});
 
-        } else if (c == ')') {
-            tokens.emplace_back(string(1, iss.get()), token_type::RPAREN);
-
-        } else if (isidentifier(c)) {
+        } else if (isidentifier(chr)) {
             ostringstream oss;
 
             do {
-                oss.put(iss.get());
-            } while (isidentifier(iss.peek()));
+                oss.put(char(iss.get()));
+            } while (isidentifier(char(iss.peek())));
 
-            tokens.emplace_back(oss.str(), token_type::ID);
+            tokens.push({oss.str(), token_type::ID});
 
         } else {
             iss.ignore();

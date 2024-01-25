@@ -1,2 +1,4 @@
 .DS_Store
 bin/
+.clangd
+compile_flags.txt

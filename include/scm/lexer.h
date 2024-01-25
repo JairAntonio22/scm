@@ -2,8 +2,7 @@
 #define SCM_LEXER_H
 
 #include <sstream>
-#include <vector>
-#include <unordered_map>
+#include <queue>
 
 enum class token_type {
     ID, BOOL, NUMBER, CHAR, STRING, LPAREN, RPAREN, 
@@ -12,12 +11,10 @@ enum class token_type {
 struct token {
     std::string literal;
     token_type type;
-
-    token(std::string literal, token_type type);
 };
 
-std::ostream& operator << (std::ostream& os, token t);
+std::ostream& operator << (std::ostream& stream, token token);
 
-std::vector<token> tokenize(std::string input);
+std::queue<token> tokenize(std::string input);
 
 #endif

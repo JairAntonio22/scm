@@ -12,6 +12,7 @@ LDFLAGS  := -L/usr/lib -lstdc++ -lm
 CPPFLAGS := -std=c++20 -Wall -Wextra -Wpedantic
 
 # compilation steps
+MAKEFLAGS += -j$(shell sysctl hw.ncpu | grep -o '[0-9]\+')
 
 bin/cmd/$(CMD): $(OBJ_FILES)
 	@mkdir -p $(@D)

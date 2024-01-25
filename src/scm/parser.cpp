@@ -4,54 +4,71 @@
 
 using namespace std;
 
-s_expr::s_expr(string atom): atom(atom) {}
+s_expr::s_expr(string atom): atom(std::move(atom)) {}
 
-s_expr::s_expr(shared_ptr<s_expr> car, shared_ptr<s_expr> cdr):
-    car(car), cdr(cdr){}
+s_expr::s_expr(pair<s_expr_ptr, s_expr_ptr> pair):
+    car(get<0>(pair)), cdr(get<1>(pair)) {}
 
-ostream& operator << (ostream& os, shared_ptr<s_expr> s) {
-    if (s->atom) {
-        return os << s->atom.value();
-    }
-
-    os << '(';
-
-    for (shared_ptr<s_expr> it = s; it != nullptr; it = it->cdr) {
-        os << it->car;
-
-        if (it->cdr != nullptr) {
-            os << ' ';
-        }
-    }
-
-    return os << ')';
+optional<string> s_expr::get_atom() {
+    return atom.empty() ? nullopt : optional(atom);
 }
 
-optional<shared_ptr<s_expr>> parse(vector<token> tokens) {
+optional<pair<s_expr_ptr, s_expr_ptr>> s_expr::get_pair() {
+    return atom.empty() ? optional(make_pair(car, cdr)) : nullopt;
+}
+
+ostream& operator << (ostream& stream, shared_ptr<s_expr> expr) {
+    if (expr == nullptr) {
+        stream << "()";
+    }
+
+    if (auto atom = expr->get_atom(); atom.has_value()) {
+        return stream << *atom;
+    }
+
+    stream << '(';
+
+    /*
+    for (shared_ptr<s_expr> it = expr; it != nullptr; it = it->cdr) {
+        stream << it->car;
+
+        if (it->cdr != nullptr) {
+            stream << ' ';
+        }
+    }
+    */
+
+    return stream << ')';
+}
+
+shared_ptr<s_expr> parse(queue<token> &tokens) {
     shared_ptr<s_expr> root;
     size_t nest = 0;
 
-    for (token t : tokens) {
-        switch (t.type) {
+    while (!tokens.empty()) {
+        switch (token tok = tokens.front(); tok.type) {
             case token_type::LPAREN: {
                 nest++;
+                tokens.pop();
             } break;
 
             case token_type::RPAREN: {
                 nest--;
+                tokens.pop();
             } break;
 
             case token_type::ID: {
-                root = make_shared<s_expr>(t.literal);
+                root = make_shared<s_expr>(tok.literal);
                 return root;
             } break;
 
             default:
+                tokens.pop();
                 continue;
         }
 
         if (nest < 0) {
-            return nullopt;
+            return nullptr;
         }
     }
 
