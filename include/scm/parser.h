@@ -1,31 +1,31 @@
 #ifndef SCM_PARSER_H
 #define SCM_PARSER_H
 
+#include <string>
 #include <optional>
 #include <memory>
 
 #include "scm/lexer.h"
 
-class s_expr;
-using s_expr_ptr = std::shared_ptr<s_expr>;
-
-class s_expr {
-    std::string atom;
-    s_expr_ptr car;
-    s_expr_ptr cdr;
+class expr {
+    std::string m_atom;
+    std::unique_ptr<expr> m_car = nullptr;
+    std::unique_ptr<expr> m_cdr = nullptr;
 
 public:
-    s_expr(std::string atom);
+    expr(std::string atom);
 
-    s_expr(std::pair<s_expr_ptr, s_expr_ptr> pair);
+    expr(std::unique_ptr<expr> car, std::unique_ptr<expr> cdr);
 
-    std::optional<std::string> get_atom();
+    auto atom() -> std::string;
 
-    std::optional<std::pair<s_expr_ptr, s_expr_ptr>> get_pair();
+    auto car() -> expr*;
+
+    auto cdr() -> expr*;
 };
 
-std::ostream& operator << (std::ostream& stream, s_expr_ptr expr);
+auto operator << (std::ostream& stream, expr* expr) -> std::ostream&;
 
-s_expr_ptr parse(std::queue<token> &tokens);
+auto parse_expr(std::queue<token> &tokens) -> std::unique_ptr<expr>;
 
 #endif

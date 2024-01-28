@@ -4,12 +4,14 @@ CMD := scm
 # compilation files
 SRC_FILES := $(shell find src -name "*.cpp")
 OBJ_FILES := $(SRC_FILES:%.cpp=bin/objs/%.o)
+DEP_FILES := $(SRC_FILES:%.cpp=bin/objs/%.d)
 
 # compiler config
 CC       := clang++
 INCLUDE  := -Iinclude/
 LDFLAGS  := -L/usr/lib -lstdc++ -lm
-CPPFLAGS := -std=c++20 -Wall -Wextra -Wpedantic
+#  -Wl, -d
+CPPFLAGS := -std=c++20 -Wall -Wextra -Wpedantic -MMD -MP
 
 # compilation steps
 MAKEFLAGS += -j$(shell sysctl hw.ncpu | grep -o '[0-9]\+')
@@ -26,6 +28,8 @@ bin:
 	-@mkdir -p bin/objs
 	-@mkdir -p bin/cmd
 
+-include $(DEP_FILES)
+
 # make commands
 .PHONY: all run debug release clean 
 
@@ -35,7 +39,7 @@ run: bin/cmd/$(CMD)
 	clear
 	./$< examples/main.scm
 
-debug: CPPFLAGS += -g
+debug: CPPFLAGS += -g -DDEBUG
 debug: all
 
 release: CPPFLAGS += -O2

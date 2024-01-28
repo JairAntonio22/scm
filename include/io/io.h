@@ -7,9 +7,9 @@
 
 namespace io {
 
-std::optional<std::string> readln();
+auto readln() -> std::optional<std::string>;
 
-std::optional<std::string> read_file(std::string_view path);
+auto read_file(std::string_view path) -> std::optional<std::string>;
 
 }
 

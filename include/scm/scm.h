@@ -7,9 +7,9 @@
 
 namespace scm {
 
-std::string read(std::string input);
+auto read(std::string input) -> std::string;
 
-std::string eval(std::string input);
+auto eval(std::string input) -> std::string;
 
 }
 

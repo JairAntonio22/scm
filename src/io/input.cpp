@@ -6,12 +6,12 @@
 
 using namespace std;
 
-optional<string> io::readln() {
+auto io::readln() -> optional<string> {
     // TODO repl input mode
     return nullopt;
 }
 
-optional<string> io::read_file(string_view path) {
+auto io::read_file(string_view path) -> optional<string> {
     ifstream input(path);
     
     if (!input.is_open()) {

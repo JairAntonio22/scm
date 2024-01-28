@@ -7,14 +7,14 @@ using namespace io;
 using namespace scm;
 using namespace std;
 
-int main(int argc, char **argv) {
+auto main(int argc, char **argv) -> int {
     if (argc != 2) {
         return 1;
     }
 
     optional<string> input = read_file(argv[1]);
 
-    if (!input) {
+    if (!input.has_value()) {
         return 1;
     }
 

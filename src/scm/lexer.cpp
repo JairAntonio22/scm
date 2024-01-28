@@ -6,23 +6,20 @@
 
 using namespace std;
 
-ostream& operator << (ostream& stream, token token) {
-    stream << token.literal << '\t';
-
-    switch (token.type) {
-        case token_type::LPAREN: return stream << "LPAREN";
-        case token_type::RPAREN: return stream << "RPAREN";
-        case token_type::ID:     return stream << "ID";
-        default:                 return stream;
+auto to_string(token_type type) -> string {
+    switch (type) {
+        case token_type::LPAREN: return "LPAREN";
+        case token_type::RPAREN: return "RPAREN";
+        case token_type::ID:     return "ID";
     }
 }
 
-static bool isidentifier(char chr) {
+static auto isidentifier(char chr) -> bool {
     static const string extended_chars = "!$%&*+-./:<=>?@^_~";
     return bool(isalnum(chr)) || extended_chars.find(chr) != string::npos;
 }
 
-queue<token> tokenize(string input) {
+auto tokenize(string input) -> queue<token> {
     istringstream iss(input);
     queue<token> tokens;
 

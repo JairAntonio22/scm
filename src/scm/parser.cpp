@@ -1,76 +1,83 @@
 #include <utility>
+#include <stack>
 
 #include "scm/parser.h"
+#include "log/log.h"
 
 using namespace std;
 
-s_expr::s_expr(string atom): atom(std::move(atom)) {}
+expr::expr(string atom):
+    m_atom(std::move(atom)) {}
 
-s_expr::s_expr(pair<s_expr_ptr, s_expr_ptr> pair):
-    car(get<0>(pair)), cdr(get<1>(pair)) {}
+expr::expr(unique_ptr<expr> car, unique_ptr<expr> cdr): // NOLINT
+    m_car(std::move(car)), m_cdr(std::move(cdr)) {}
 
-optional<string> s_expr::get_atom() {
-    return atom.empty() ? nullopt : optional(atom);
+auto expr::atom() -> string {
+    return m_atom;
 }
 
-optional<pair<s_expr_ptr, s_expr_ptr>> s_expr::get_pair() {
-    return atom.empty() ? optional(make_pair(car, cdr)) : nullopt;
+auto expr::car() -> expr* {
+    return m_car.get();
 }
 
-ostream& operator << (ostream& stream, shared_ptr<s_expr> expr) {
+auto expr::cdr() -> expr* {
+    return m_cdr.get();
+}
+
+auto operator << (ostream& stream, expr* expr) -> ostream& {
     if (expr == nullptr) {
         stream << "()";
     }
 
-    if (auto atom = expr->get_atom(); atom.has_value()) {
-        return stream << *atom;
+    if (!expr->atom().empty()) {
+        return stream << expr->atom();
     }
 
-    stream << '(';
+    stream << '(' << expr->car();
 
-    /*
-    for (shared_ptr<s_expr> it = expr; it != nullptr; it = it->cdr) {
-        stream << it->car;
-
-        if (it->cdr != nullptr) {
-            stream << ' ';
-        }
+    for (auto* iter = expr->cdr(); iter != nullptr; iter = iter->cdr()) {
+        stream << ' ' << iter->car(); 
     }
-    */
 
     return stream << ')';
 }
 
-shared_ptr<s_expr> parse(queue<token> &tokens) {
-    shared_ptr<s_expr> root;
-    size_t nest = 0;
+static auto parse_list(queue<token> &tokens) -> unique_ptr<expr>;
 
+auto parse_expr(queue<token> &tokens) -> unique_ptr<expr> {
     while (!tokens.empty()) {
-        switch (token tok = tokens.front(); tok.type) {
-            case token_type::LPAREN: {
-                nest++;
-                tokens.pop();
-            } break;
-
+        switch (token token = tokens.front(); token.type) {
             case token_type::RPAREN: {
-                nest--;
-                tokens.pop();
-            } break;
+                log::error("expecting identifier or '(', given ')'");
+                return nullptr;
+            }
 
-            case token_type::ID: {
-                root = make_shared<s_expr>(tok.literal);
-                return root;
-            } break;
+            case token_type::LPAREN: {
+                tokens.pop();
+                return parse_list(tokens);
+            }
 
             default:
+                unique_ptr<expr> root = make_unique<expr>(token.literal);
                 tokens.pop();
-                continue;
-        }
-
-        if (nest < 0) {
-            return nullptr;
+                return root;
         }
     }
 
-    return root;
+    return nullptr;
+}
+
+static auto parse_list(queue<token> &tokens) -> unique_ptr<expr> {
+    while (!tokens.empty()) {
+        if (tokens.front().type == token_type::RPAREN) {
+            tokens.pop();
+            return nullptr;
+        }
+
+        unique_ptr<expr> car = parse_expr(tokens);
+        unique_ptr<expr> cdr = parse_list(tokens);
+        return make_unique<expr>(std::move(car), std::move(cdr));
+    }
+
+    return nullptr;
 }
