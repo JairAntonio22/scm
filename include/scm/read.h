@@ -1,9 +1,13 @@
-#ifndef SCM_LEXER_H
-#define SCM_LEXER_H
+#ifndef SCM_READ_H
+#define SCM_READ_H
 
+#include <memory>
 #include <sstream>
+#include <optional>
 #include <string>
 #include <queue>
+
+#include "scm/scm.h"
 
 enum class token_type {
     ID, LPAREN, RPAREN, 
@@ -16,8 +20,8 @@ struct token {
     token_type type;
 };
 
-auto operator << (std::ostream& stream, token token) -> std::ostream&;
-
 auto tokenize(std::string input) -> std::queue<token>;
+
+auto parse_expr(std::queue<token> &tokens) -> std::unique_ptr<scm::expr>;
 
 #endif

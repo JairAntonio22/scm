@@ -1,0 +1,9 @@
+-xc++
+-Iinclude/
+-L/usr/lib
+-lstdc++
+-lm
+-std=c++20
+-Wall
+-Wextra
+-Wpedantic

@@ -12,13 +12,13 @@ auto main(int argc, char **argv) -> int {
         return 1;
     }
 
-    optional<string> input = read_file(argv[1]);
+    optional<string> raw_input = read_file(argv[1]);
 
-    if (!input.has_value()) {
+    if (!raw_input.has_value()) {
         return 1;
     }
 
-    string expr = read(input.value());
-    // string result = eval(expr);
-    // cout << result;
+    unique_ptr<expr> input = read(raw_input.value());
+    unique_ptr<expr> output = eval(std::move(input));
+    cout << output;
 }
